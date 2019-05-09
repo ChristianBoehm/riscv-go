@@ -25,7 +25,6 @@
 #define SYS_fcntl		25
 #define SYS_futex		98
 #define SYS_getpid		172
-#define SYS_getrlimit		163
 #define SYS_gettid		178
 #define SYS_gettimeofday	169
 #define SYS_kill		129
@@ -134,15 +133,6 @@ TEXT runtime·read(SB),NOSPLIT,$-8-28
 	MOV	$SYS_read, A7
 	ECALL
 	ERR_RETURN_M1(ret+24)
-	RET
-
-// func getrlimit(kind int32, limit unsafe.Pointer) int32
-TEXT runtime·getrlimit(SB),NOSPLIT,$-8-20
-	MOVW	kind+0(FP), A0
-	MOV	limit+8(FP), A1
-	MOV	$SYS_getrlimit, A7
-	ECALL
-	MOVW	A0, ret+16(FP)
 	RET
 
 // func usleep(usec uint32)
