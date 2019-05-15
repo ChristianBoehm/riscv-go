@@ -531,10 +531,10 @@ TEXT ·checkASM(SB),NOSPLIT,$0-1
 // The act of CALLing gcWriteBarrier will clobber RA (LR).
 // It does not clobber any other general-purpose registers,
 // but may clobber others (e.g., floating point registers).
-TEXT runtime·gcWriteBarrier(SB),NOSPLIT,$284
+TEXT runtime·gcWriteBarrier(SB),NOSPLIT,$296
 	// Save the registers clobbered by the fast path.
-	MOV	A0, 276(X2)
-	MOV	A1, 284(X2)
+	MOV	A0, 280(X2)
+	MOV	A1, 288(X2)
 	MOV	g_m(g), A0
 	MOV	m_p(A0), A0
 	MOV	(p_wbBuf+wbBuf_next)(A0), A1
@@ -550,8 +550,8 @@ TEXT runtime·gcWriteBarrier(SB),NOSPLIT,$284
 	// Is the buffer full?
 	BEQ	A1, T6, flush
 ret:
-	MOV	276(X2), A0
-	MOV	284(X2), A1
+	MOV	280(X2), A0
+	MOV	288(X2), A1
 	// Do the write.
 	MOV	T1, (T0)
 	RET
@@ -588,19 +588,19 @@ flush:
 	MOV	X16, 152(X2)
 	MOV	X17, 160(X2)
 	MOV	X18, 168(X2)
-	MOV	X19, 172(X2)
-	MOV	X20, 180(X2)
-	MOV	X21, 188(X2)
-	MOV	X22, 196(X2)
-	MOV	X23, 204(X2)
-	MOV	X24, 212(X2)
-	MOV	X25, 220(X2)
-	MOV	X26, 228(X2)
-	MOV	X27, 236(X2)
-	MOV	X28, 244(X2)
-	MOV	X29, 252(X2)
-	MOV	X30, 260(X2)
-	MOV	X31, 268(X2)
+	MOV	X19, 176(X2)
+	MOV	X20, 184(X2)
+	MOV	X21, 192(X2)
+	MOV	X22, 200(X2)
+	MOV	X23, 208(X2)
+	MOV	X24, 216(X2)
+	MOV	X25, 224(X2)
+	MOV	X26, 232(X2)
+	MOV	X27, 240(X2)
+	MOV	X28, 248(X2)
+	MOV	X29, 256(X2)
+	MOV	X30, 264(X2)
+	MOV	X31, 272(X2)
 
 	// This takes arguments T0 and T1.
 	CALL	runtime·wbBufFlush(SB)
@@ -624,19 +624,19 @@ flush:
 	MOV	152(X2), X16
 	MOV	160(X2), X17
 	MOV	168(X2), X18
-	MOV	172(X2), X19
-	MOV	180(X2), X20
-	MOV	188(X2), X21
-	MOV	196(X2), X22
-	MOV	204(X2), X23
-	MOV	212(X2), X24
-	MOV	220(X2), X25
-	MOV	228(X2), X26
-	MOV	236(X2), X27
-	MOV	244(X2), X28
-	MOV	252(X2), X29
-	MOV	260(X2), X30
-	MOV	268(X2), X31
+	MOV	176(X2), X19
+	MOV	184(X2), X20
+	MOV	192(X2), X21
+	MOV	200(X2), X22
+	MOV	208(X2), X23
+	MOV	216(X2), X24
+	MOV	224(X2), X25
+	MOV	232(X2), X26
+	MOV	240(X2), X27
+	MOV	248(X2), X28
+	MOV	256(X2), X29
+	MOV	264(X2), X30
+	MOV	272(X2), X31
 
 	JMP	ret
 
