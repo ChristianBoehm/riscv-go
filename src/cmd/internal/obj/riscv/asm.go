@@ -1067,13 +1067,13 @@ func stacksplit(ctxt *obj.Link, p *obj.Prog, cursym *obj.LSym, newprog obj.ProgA
 		to_done = p
 	} else if framesize <= objabi.StackBig {
 		// large stack: SP-framesize < stackguard-StackSmall
-		//	ADD	$-framesize, SP, A1
+		//	ADD	$-(framesize-StackSmall), SP, A1
 		//	BGTU	A1, stackguard, done
 		p = obj.Appendp(p, newprog)
 		// TODO(sorear): logic inconsistent with comment, but both match all non-x86 arches
 		p.As = AADDI
 		p.From.Type = obj.TYPE_CONST
-		p.From.Offset = int64(-framesize)
+		p.From.Offset = -(int64(framesize) - objabi.StackSmall)
 		p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: REG_X2})
 		p.To.Type = obj.TYPE_REG
 		p.To.Reg = REG_A1
@@ -1147,6 +1147,8 @@ func stacksplit(ctxt *obj.Link, p *obj.Prog, cursym *obj.LSym, newprog obj.ProgA
 		p.To.Type = obj.TYPE_BRANCH
 		to_done = p
 	}
+
+	p = ctxt.EmitEntryLiveness(cursym, p, newprog)
 
 	// JAL	runtime.morestack(SB)
 	p = obj.Appendp(p, newprog)
