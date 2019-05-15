@@ -31,7 +31,7 @@ func mkzversion(dir, file string) {
 	fmt.Fprintln(&buf)
 	fmt.Fprintf(&buf, "const TheVersion = `%s`\n", findgoversion())
 	fmt.Fprintf(&buf, "const Goexperiment = `%s`\n", os.Getenv("GOEXPERIMENT"))
-	fmt.Fprintf(&buf, "const StackGuardMultiplierDefault = %d + 20 * GoarchRiscv64\n", stackGuardMultiplierDefault())
+	fmt.Fprintf(&buf, "const StackGuardMultiplierDefault = %d\n", stackGuardMultiplierDefault())
 
 	writefile(buf.String(), file, writeSkipSame)
 }
