@@ -1,4 +1,10 @@
-TEXT asmtest(SB),7,$0
+// Copyright 2019 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+#include "../../../../../runtime/textflag.h"
+
+TEXT asmtest(SB),DUPOK|NOSPLIT,$0
 start:
 	ADD	T1, T0, T2			// b3836200
 	ADD	T0, T1				// 33035300
