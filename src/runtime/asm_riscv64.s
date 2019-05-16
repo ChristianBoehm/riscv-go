@@ -127,8 +127,7 @@ switch:
 	CALL	runtime·save_g(SB)
 	MOV	(g_sched+gobuf_sp)(g), T0
 	// make it look like mstart called systemstack on g0, to stop traceback
-	ADD	$-16, T0
-	AND	$~15, T0
+	ADD	$-8, T0
 	MOV	$runtime·mstart(SB), T1
 	MOV	T1, 0(T0)
 	MOV	T0, X2
@@ -147,9 +146,11 @@ switch:
 
 noswitch:
 	// already on m stack, just call directly
+	// Using a tail call here cleans up tracebacks since we won't stop
+	// at an intermediate systemstack.
 	MOV	0(CTXT), T1	// code pointer
-	JALR	RA, T1
-	RET
+	ADD	$8, X2
+	JMP	(T1)
 
 TEXT runtime·getcallerpc(SB),NOSPLIT,$-8-8
 	MOV	0(X2), T0		// LR saved by caller
