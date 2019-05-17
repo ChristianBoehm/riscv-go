@@ -24277,7 +24277,7 @@ var opcodeTable = [...]opInfo{
 	},
 	{
 		name:              "MOVSconst",
-		auxType:           auxInt32,
+		auxType:           auxInt64,
 		argLen:            0,
 		rematerializeable: true,
 		asm:               riscv.AMOV,
