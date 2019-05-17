@@ -164,6 +164,8 @@ func TestDisasm(t *testing.T) {
 	switch runtime.GOARCH {
 	case "mips", "mipsle", "mips64", "mips64le":
 		t.Skipf("skipping on %s, issue 12559", runtime.GOARCH)
+	case "riscv64":
+		t.Skipf("skipping on %s, issue XYZ", runtime.GOARCH)
 	case "s390x":
 		t.Skipf("skipping on %s, issue 15255", runtime.GOARCH)
 	}
@@ -174,6 +176,8 @@ func TestDisasmCode(t *testing.T) {
 	switch runtime.GOARCH {
 	case "mips", "mipsle", "mips64", "mips64le":
 		t.Skipf("skipping on %s, issue 12559", runtime.GOARCH)
+	case "riscv64":
+		t.Skipf("skipping on %s, issue XYZ", runtime.GOARCH)
 	case "s390x":
 		t.Skipf("skipping on %s, issue 15255", runtime.GOARCH)
 	}
@@ -186,10 +190,12 @@ func TestDisasmExtld(t *testing.T) {
 		t.Skipf("skipping on %s", runtime.GOOS)
 	}
 	switch runtime.GOARCH {
-	case "ppc64":
-		t.Skipf("skipping on %s, no support for external linking, issue 9038", runtime.GOARCH)
 	case "mips64", "mips64le", "mips", "mipsle":
 		t.Skipf("skipping on %s, issue 12559 and 12560", runtime.GOARCH)
+	case "ppc64":
+		t.Skipf("skipping on %s, no support for external linking, issue 9038", runtime.GOARCH)
+	case "riscv64":
+		t.Skipf("skipping on %s, issue XYZ", runtime.GOARCH)
 	case "s390x":
 		t.Skipf("skipping on %s, issue 15255", runtime.GOARCH)
 	}
@@ -207,6 +213,8 @@ func TestDisasmGoobj(t *testing.T) {
 	switch runtime.GOARCH {
 	case "mips", "mipsle", "mips64", "mips64le":
 		t.Skipf("skipping on %s, issue 12559", runtime.GOARCH)
+	case "riscv64":
+		t.Skipf("skipping on %s, issue XYZ", runtime.GOARCH)
 	case "s390x":
 		t.Skipf("skipping on %s, issue 15255", runtime.GOARCH)
 	}
