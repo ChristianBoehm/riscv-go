@@ -308,7 +308,7 @@ ok:
 	MOV	ZERO, err+40(FP)
 	RET
 
-// func munmap(addr unsafe.Pointer, n uintptr)               {}
+// func munmap(addr unsafe.Pointer, n uintptr)
 TEXT runtime·munmap(SB),NOSPLIT,$-8
 	MOV	addr+0(FP), A0
 	MOV	n+8(FP), A1
@@ -317,7 +317,7 @@ TEXT runtime·munmap(SB),NOSPLIT,$-8
 	ERR_ABORT
 	RET
 
-// func madvise(addr unsafe.Pointer, n uintptr, flags int32) {}
+// func madvise(addr unsafe.Pointer, n uintptr, flags int32)
 TEXT runtime·madvise(SB),NOSPLIT,$-8
 	MOV	addr+0(FP), A0
 	MOV	n+8(FP), A1
@@ -363,22 +363,22 @@ TEXT runtime·clone(SB),NOSPLIT,$-8
 	BEQ	ZERO, A0, child
 	MOVW	ZERO, ret+40(FP)
 	RET
-child:
 
+child:
 	// In child, on new stack.
 	MOV	-32(X2), T0
 	MOV	$1234, A0
 	BEQ	A0, T0, good
 	WORD	$0	//crash
-good:
 
+good:
 	// Initialize m->procid to Linux tid
 	MOV	$SYS_gettid, A7
 	ECALL
 
-	MOV	-24(X2), T2     // fn
-	MOV	-16(X2), T1     // g
-	MOV	-8(X2), T0      // m
+	MOV	-24(X2), T2	// fn
+	MOV	-16(X2), T1	// g
+	MOV	-8(X2), T0	// m
 
 	BEQ	ZERO, T0, nog
 	BEQ	ZERO, T1, nog
@@ -458,7 +458,7 @@ TEXT runtime·epollwait(SB),NOSPLIT,$-8
 	MOVW	A0, ret+24(FP)
 	RET
 
-// func closeonexec(int32)                                   {}
+// func closeonexec(int32)
 TEXT runtime·closeonexec(SB),NOSPLIT,$-8
 	MOVW	fd+0(FP), A0  // fd
 	MOV	$2, A1	// F_SETFD
