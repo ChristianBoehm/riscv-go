@@ -423,9 +423,11 @@
 (NeqB x y) -> (Neq8 x y)
 (Not  x)   -> (XORI [1] x)
 
+// Lowering pointer arithmetic
 // TODO: Special handling for SP offsets, like ARM
 (OffPtr [off] ptr:(SP)) -> (MOVaddr [off] ptr)
-(OffPtr [off] ptr) -> (ADDI [off] ptr)
+(OffPtr [off] ptr) && is32Bit(off) -> (ADDI [off] ptr)
+(OffPtr [off] ptr) -> (ADD (MOVDconst [off]) ptr)
 
 (Const8 [val]) -> (MOVBconst [val])
 (Const16 [val]) -> (MOVHconst [val])

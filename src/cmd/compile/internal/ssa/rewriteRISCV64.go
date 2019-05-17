@@ -3449,6 +3449,10 @@ func rewriteValueRISCV64_OpNot_0(v *Value) bool {
 	}
 }
 func rewriteValueRISCV64_OpOffPtr_0(v *Value) bool {
+	b := v.Block
+	_ = b
+	typ := &b.Func.Config.Types
+	_ = typ
 	// match: (OffPtr [off] ptr:(SP))
 	// cond:
 	// result: (MOVaddr [off] ptr)
@@ -3464,13 +3468,29 @@ func rewriteValueRISCV64_OpOffPtr_0(v *Value) bool {
 		return true
 	}
 	// match: (OffPtr [off] ptr)
-	// cond:
+	// cond: is32Bit(off)
 	// result: (ADDI [off] ptr)
 	for {
 		off := v.AuxInt
 		ptr := v.Args[0]
+		if !(is32Bit(off)) {
+			break
+		}
 		v.reset(OpRISCV64ADDI)
 		v.AuxInt = off
+		v.AddArg(ptr)
+		return true
+	}
+	// match: (OffPtr [off] ptr)
+	// cond:
+	// result: (ADD (MOVDconst [off]) ptr)
+	for {
+		off := v.AuxInt
+		ptr := v.Args[0]
+		v.reset(OpRISCV64ADD)
+		v0 := b.NewValue0(v.Pos, OpRISCV64MOVDconst, typ.UInt64)
+		v0.AuxInt = off
+		v.AddArg(v0)
 		v.AddArg(ptr)
 		return true
 	}
