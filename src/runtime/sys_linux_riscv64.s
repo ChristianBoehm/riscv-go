@@ -341,7 +341,7 @@ TEXT runtime·futex(SB),NOSPLIT,$-8
 	RET
 
 // func clone(flags int32, stk, mp, gp, fn unsafe.Pointer) int32
-TEXT runtime·clone(SB),NOSPLIT,$-8
+TEXT runtime·clone(SB),NOSPLIT|NOFRAME,$0
 	MOVW	flags+0(FP), A0
 	MOV	stk+8(FP), A1
 
@@ -392,7 +392,12 @@ good:
 nog:
 	// Call fn
 	JALR	RA, T2
-	WORD	$0
+
+	// It shouldn't return.  If it does, exit this thread.
+	MOV	$111, A0
+	MOV	$SYS_exit, A7
+	ECALL
+	JMP	-3(PC)	// keep exiting
 
 // func sigaltstack(new, old *stackt)
 TEXT runtime·sigaltstack(SB),NOSPLIT,$-8
