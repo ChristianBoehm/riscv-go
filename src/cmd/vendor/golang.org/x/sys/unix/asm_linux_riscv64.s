@@ -1,4 +1,4 @@
-// Copyright 2015 The Go Authors. All rights reserved.
+// Copyright 2019 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,11 +7,10 @@
 #include "textflag.h"
 
 //
-// System calls for riscv, Linux
+// System calls for linux/riscv64.
 //
-
-// Just jump to package syscall's implementation for all these functions.
-// The runtime may know about them.
+// Where available, just jump to package syscall's implementation of
+// these functions.
 
 TEXT ·Syscall(SB),NOSPLIT,$0-56
 	JMP	syscall·Syscall(SB)
@@ -32,7 +31,6 @@ TEXT ·SyscallNoError(SB),NOSPLIT,$0-48
 	ECALL
 	MOV	A0, r1+32(FP)	// r1
 	MOV	A1, r2+40(FP)	// r2
-	MOV	ZERO, err+48(FP)	// errno
 	CALL	runtime·exitsyscall(SB)
 	RET
 
