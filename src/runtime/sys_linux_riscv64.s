@@ -210,11 +210,11 @@ TEXT runtime·mincore(SB),NOSPLIT|NOFRAME,$0-28
 // func walltime() (sec int64, nsec int32)
 TEXT runtime·walltime(SB),NOSPLIT,$24-12
 	MOV	$0, A0 // CLOCK_REALTIME
-	MOV	X2, A1
+	MOV	$8(X2), A1
 	MOV	$SYS_clock_gettime, A7
 	ECALL
-	MOV	0(X2), T0	// sec
-	MOV	8(X2), T1	// nsec
+	MOV	8(X2), T0	// sec
+	MOV	16(X2), T1	// nsec
 	MOV	T0, sec+0(FP)
 	MOVW	T1, nsec+8(FP)
 	RET
@@ -222,11 +222,11 @@ TEXT runtime·walltime(SB),NOSPLIT,$24-12
 // func nanotime() int64
 TEXT runtime·nanotime(SB),NOSPLIT,$24-8
 	MOV	$1, A0 // CLOCK_MONOTONIC
-	MOV	X2, A1
+	MOV	$8(X2), A1
 	MOV	$SYS_clock_gettime, A7
 	ECALL
-	MOV	0(X2), T0	// sec
-	MOV	8(X2), T1	// nsec
+	MOV	8(X2), T0	// sec
+	MOV	16(X2), T1	// nsec
 	// sec is in T0, nsec in T1
 	// return nsec in T0
 	MOV	$1000000000, T2
