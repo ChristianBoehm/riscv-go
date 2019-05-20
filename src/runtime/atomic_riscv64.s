@@ -7,6 +7,6 @@
 #define FENCE WORD $0x0ff0000f
 
 // func publicationBarrier()
-TEXT ·publicationBarrier(SB),NOSPLIT,$-8-0
+TEXT ·publicationBarrier(SB),NOSPLIT|NOFRAME,$0-0
 	FENCE
 	RET

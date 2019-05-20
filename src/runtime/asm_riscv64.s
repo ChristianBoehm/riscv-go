@@ -152,7 +152,7 @@ noswitch:
 	ADD	$8, X2
 	JMP	(T1)
 
-TEXT runtime·getcallerpc(SB),NOSPLIT,$-8-8
+TEXT runtime·getcallerpc(SB),NOSPLIT|NOFRAME,$0-8
 	MOV	0(X2), T0		// LR saved by caller
 	MOV	T0, ret+0(FP)
 	RET
@@ -199,7 +199,7 @@ loop:
 // record an argument size. For that purpose, it has no arguments.
 
 // func morestack()
-TEXT runtime·morestack(SB),NOSPLIT,$-8-0
+TEXT runtime·morestack(SB),NOSPLIT|NOFRAME,$0-0
 	// Cannot grow scheduler stack (m->g0).
 	MOV	g_m(g), A0
 	MOV	m_g0(A0), A1
@@ -240,7 +240,7 @@ TEXT runtime·morestack(SB),NOSPLIT,$-8-0
 	UNDEF
 
 // func morestack_noctxt()
-TEXT runtime·morestack_noctxt(SB),NOSPLIT,$-8-0
+TEXT runtime·morestack_noctxt(SB),NOSPLIT|NOFRAME,$0-0
 	MOV	ZERO, CTXT
 	JMP	runtime·morestack(SB)
 
@@ -275,7 +275,7 @@ TEXT runtime·gogo(SB), NOSPLIT, $16-8
 // 2. sub 12 bytes to get back to JAL deferreturn
 // 3. JMP to fn
 // TODO(sorear): There are shorter jump sequences.  This function will need to be updated when we use them.
-TEXT runtime·jmpdefer(SB), NOSPLIT, $-8-16
+TEXT runtime·jmpdefer(SB), NOSPLIT|NOFRAME, $0-16
 	MOV	0(X2), RA
 	ADD	$-12, RA
 
@@ -294,7 +294,7 @@ TEXT runtime·procyield(SB),NOSPLIT,$0-0
 // to keep running g.
 
 // func mcall(fn func(*g))
-TEXT runtime·mcall(SB), NOSPLIT, $-8-8
+TEXT runtime·mcall(SB), NOSPLIT|NOFRAME, $0-8
 	// Save caller state in g->sched
 	MOV	X2, (g_sched+gobuf_sp)(g)
 	MOV	RA, (g_sched+gobuf_pc)(g)
@@ -319,7 +319,7 @@ TEXT runtime·mcall(SB), NOSPLIT, $-8-8
 
 // func gosave(buf *gobuf)
 // save state in Gobuf; setjmp
-TEXT runtime·gosave(SB), NOSPLIT, $-8-8
+TEXT runtime·gosave(SB), NOSPLIT|NOFRAME, $0-8
 	MOV	buf+0(FP), T1
 	MOV	X2, gobuf_sp(T1)
 	MOV	RA, gobuf_pc(T1)
@@ -337,7 +337,7 @@ TEXT ·asmcgocall(SB),NOSPLIT,$0-12
 	WORD $0
 
 // func asminit()
-TEXT runtime·asminit(SB),NOSPLIT,$-8-0
+TEXT runtime·asminit(SB),NOSPLIT|NOFRAME,$0-0
 	RET
 
 // reflectcall: call a function with the given argument list
@@ -358,7 +358,7 @@ TEXT reflect·call(SB), NOSPLIT, $0-0
 	JMP	·reflectcall(SB)
 
 // func reflectcall(argtype *_type, fn, arg unsafe.Pointer, argsize uint32, retoffset uint32)
-TEXT ·reflectcall(SB), NOSPLIT, $-8-32
+TEXT ·reflectcall(SB), NOSPLIT|NOFRAME, $0-32
 	MOVWU argsize+24(FP), T0
 	DISPATCH(runtime·call32, 32)
 	DISPATCH(runtime·call64, 64)
@@ -464,7 +464,7 @@ CALLFN(·call1073741824, 1073741824)
 // func goexit(neverCallThisFunction)
 // The top-most function running on a goroutine
 // returns to goexit+PCQuantum.
-TEXT runtime·goexit(SB),NOSPLIT,$-8-0
+TEXT runtime·goexit(SB),NOSPLIT|NOFRAME,$0-0
 	MOV	ZERO, ZERO	// NOP
 	JMP	runtime·goexit1(SB)	// does not return
 	// traceback from goexit1 must hit code range of goexit
@@ -503,11 +503,11 @@ TEXT runtime·prefetcht2(SB),NOSPLIT,$0-8
 TEXT runtime·prefetchnta(SB),NOSPLIT,$0-8
 	RET
 
-TEXT runtime·breakpoint(SB),NOSPLIT,$-8-0
+TEXT runtime·breakpoint(SB),NOSPLIT|NOFRAME,$0-0
 	EBREAK
 	RET
 
-TEXT runtime·abort(SB),NOSPLIT,$-8-0
+TEXT runtime·abort(SB),NOSPLIT|NOFRAME,$0-0
 	EBREAK
 	RET
 

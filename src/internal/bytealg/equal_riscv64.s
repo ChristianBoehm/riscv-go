@@ -36,7 +36,7 @@ equal:
 	RET
 
 // func memequal(a, b unsafe.Pointer, size uintptr) bool
-TEXT runtime·memequal(SB),NOSPLIT,$-8-25
+TEXT runtime·memequal(SB),NOSPLIT|NOFRAME,$0-25
 	MOV	a+0(FP), A1
 	MOV	b+8(FP), A2
 	BEQ	A1, A2, eq

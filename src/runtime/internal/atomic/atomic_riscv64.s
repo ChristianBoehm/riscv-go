@@ -83,14 +83,14 @@ cas_fail:
 	RET
 
 // func Load(ptr *uint32) uint32
-TEXT ·Load(SB),NOSPLIT,$-8-12
+TEXT ·Load(SB),NOSPLIT|NOFRAME,$0-12
 	MOV	ptr+0(FP), A0
 	AMOWSC(LR_,10,10,0)
 	MOVW	A0, ret+8(FP)
 	RET
 
 // func Load64(ptr *uint64) uint64
-TEXT ·Load64(SB),NOSPLIT,$-8-16
+TEXT ·Load64(SB),NOSPLIT|NOFRAME,$0-16
 	MOV	ptr+0(FP), A0
 	AMODSC(LR_,10,10,0)
 	MOV	A0, ret+8(FP)
