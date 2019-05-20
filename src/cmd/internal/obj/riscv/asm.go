@@ -443,18 +443,27 @@ func preprocess(ctxt *obj.Link, cursym *obj.LSym, newprog obj.ProgAlloc) {
 	}
 
 	stacksize := text.To.Offset
-
-	if stacksize < 0 {
-		// Compatibility hack.
+	if stacksize == -8 {
+		// Historical way to mark NOFRAME.
 		text.From.Sym.Set(obj.AttrNoFrame, true)
 		stacksize = 0
 	}
-	// We must save RA if there is a CALL.
-	saveRA := containsCall(cursym)
-	// Unless we're told not to!
-	if text.From.Sym.NoFrame() {
-		saveRA = false
+	if stacksize < 0 {
+		ctxt.Diag("negative frame size %d - did you mean NOFRAME?", stacksize)
 	}
+	if text.From.Sym.NoFrame() {
+		if stacksize != 0 {
+			ctxt.Diag("NOFRAME functions must have a frame size of 0, not %d", stacksize)
+		}
+	}
+
+	if !containsCall(cursym) && stacksize == 0 {
+		// A leaf function with no locals has no frame.
+		text.From.Sym.Set(obj.AttrNoFrame, true)
+	}
+
+	// Save RA unless there is no frame.
+	saveRA := !text.From.Sym.NoFrame()
 	if saveRA {
 		stacksize += 8
 	}
