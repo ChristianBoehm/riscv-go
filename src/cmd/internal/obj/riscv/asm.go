@@ -112,9 +112,9 @@ func lowerjalr(p *obj.Prog) {
 //
 // lr is the link register to use for the JALR.
 //
-// p must be a CALL or JMP.
+// p must be a CALL, JMP or RET.
 func jalrToSym(ctxt *obj.Link, p *obj.Prog, newprog obj.ProgAlloc, lr int16) *obj.Prog {
-	if p.As != obj.ACALL && p.As != obj.AJMP {
+	if p.As != obj.ACALL && p.As != obj.AJMP && p.As != obj.ARET {
 		ctxt.Diag("unexpected Prog in jalrToSym: %v", p)
 		return p
 	}
@@ -801,6 +801,8 @@ func preprocess(ctxt *obj.Link, cursym *obj.LSym, newprog obj.ProgAlloc) {
 
 		// Replace RET with epilogue.
 		case obj.ARET:
+			retJMP := p.To.Sym
+
 			if saveRA {
 				// Restore RA.
 				p.As = ALD
@@ -821,12 +823,19 @@ func preprocess(ctxt *obj.Link, cursym *obj.LSym, newprog obj.ProgAlloc) {
 				p = obj.Appendp(p, newprog)
 			}
 
-			p.As = AJALR
-			p.From.Type = obj.TYPE_CONST
-			p.From.Offset = 0
-			p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: REG_RA})
-			p.To.Type = obj.TYPE_REG
-			p.To.Reg = REG_ZERO
+			if retJMP != nil {
+				p.As = obj.ARET
+				p.To.Sym = retJMP
+				p = jalrToSym(ctxt, p, newprog, REG_ZERO)
+			} else {
+				p.As = AJALR
+				p.From.Type = obj.TYPE_CONST
+				p.From.Offset = 0
+				p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: REG_RA})
+				p.To.Type = obj.TYPE_REG
+				p.To.Reg = REG_ZERO
+			}
+
 			// "Add back" the stack removed in the previous instruction.
 			//
 			// This is to avoid confusing pctospadj, which sums
