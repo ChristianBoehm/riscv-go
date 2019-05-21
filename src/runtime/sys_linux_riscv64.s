@@ -311,7 +311,7 @@ TEXT runtime·madvise(SB),NOSPLIT|NOFRAME,$0
 	MOVW	flags+16(FP), A2
 	MOV	$SYS_madvise, A7
 	ECALL
-	// ignore failure - maybe pages are locked
+	MOVW	A0, ret+24(FP)
 	RET
 
 // func futex(addr unsafe.Pointer, op int32, val uint32, ts, addr2 unsafe.Pointer, val3 uint32) int32
