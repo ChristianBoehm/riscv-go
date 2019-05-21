@@ -7,34 +7,6 @@
 
 #define	CTXT	S4
 
-// TODO: share code with memequal?
-// func Equal(a, b []byte) bool
-TEXT ·Equal(SB),NOSPLIT,$0-49
-	MOV	a_len+8(FP), A3
-	MOV	b_len+32(FP), A4
-	BNE	A3, A4, noteq		// unequal lengths are not equal
-
-	MOV	a+0(FP), A1
-	MOV	b+24(FP), A2
-	ADD	A1, A3		// end
-
-loop:
-	BEQ	A1, A3, equal		// reached the end
-	MOVBU	(A1), A6
-	ADD	$1, A1
-	MOVBU	(A2), A7
-	ADD	$1, A2
-	BEQ	A6, A7, loop
-
-noteq:
-	MOVB	ZERO, ret+48(FP)
-	RET
-
-equal:
-	MOV	$1, A1
-	MOVB	A1, ret+48(FP)
-	RET
-
 // func memequal(a, b unsafe.Pointer, size uintptr) bool
 TEXT runtime·memequal(SB),NOSPLIT|NOFRAME,$0-25
 	MOV	a+0(FP), A1

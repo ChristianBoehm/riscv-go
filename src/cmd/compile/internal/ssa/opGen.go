@@ -1918,6 +1918,9 @@ const (
 	OpRISCV64LoweredGetCallerSP
 	OpRISCV64LoweredGetCallerPC
 	OpRISCV64LoweredWB
+	OpRISCV64LoweredPanicBoundsA
+	OpRISCV64LoweredPanicBoundsB
+	OpRISCV64LoweredPanicBoundsC
 	OpRISCV64FADDS
 	OpRISCV64FSUBS
 	OpRISCV64FMULS
@@ -25624,6 +25627,39 @@ var opcodeTable = [...]opInfo{
 				{1, 32}, // T1
 			},
 			clobbers: 9223372034707292160, // FT0 FT1 FT2 FT3 FT4 FT5 FT6 FT7 FS0 FS1 FA0 FA1 FA2 FA3 FA4 FA5 FA6 FA7 FS2 FS3 FS4 FS5 FS6 FS7 FS8 FS9 FS10 FS11 FT8 FT9 FT10 FT11
+		},
+	},
+	{
+		name:    "LoweredPanicBoundsA",
+		auxType: auxInt64,
+		argLen:  3,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 64},        // T2
+				{1, 134217728}, // T3
+			},
+		},
+	},
+	{
+		name:    "LoweredPanicBoundsB",
+		auxType: auxInt64,
+		argLen:  3,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 32}, // T1
+				{1, 64}, // T2
+			},
+		},
+	},
+	{
+		name:    "LoweredPanicBoundsC",
+		auxType: auxInt64,
+		argLen:  3,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 16}, // T0
+				{1, 32}, // T1
+			},
 		},
 	},
 	{

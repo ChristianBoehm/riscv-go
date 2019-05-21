@@ -123,9 +123,8 @@ func archrelocvariant(ctxt *ld.Link, r *sym.Reloc, s *sym.Symbol, t int64) int64
 // and pasted from mips64.
 func asmb(ctxt *ld.Link) {
 	if ctxt.Debugvlog != 0 {
-		fmt.Fprintf(ctxt.Bso, "%5.2f asmb\n", ld.Cputime())
+		ctxt.Logf("%5.2f asmb\n", ld.Cputime())
 	}
-	ctxt.Bso.Flush()
 
 	if ctxt.IsELF {
 		ld.Asmbelfsetup()
@@ -141,35 +140,41 @@ func asmb(ctxt *ld.Link) {
 
 	if ld.Segrodata.Filelen > 0 {
 		if ctxt.Debugvlog != 0 {
-			fmt.Fprintf(ctxt.Bso, "%5.2f rodatblk\n", ld.Cputime())
+			ctxt.Logf("%5.2f rodatblk\n", ld.Cputime())
 		}
-		ctxt.Bso.Flush()
-
 		ctxt.Out.SeekSet(int64(ld.Segrodata.Fileoff))
 		ld.Datblk(ctxt, int64(ld.Segrodata.Vaddr), int64(ld.Segrodata.Filelen))
 	}
+	if ld.Segrelrodata.Filelen > 0 {
+		if ctxt.Debugvlog != 0 {
+			ctxt.Logf("%5.2f rodatblk\n", ld.Cputime())
+		}
+		ctxt.Out.SeekSet(int64(ld.Segrelrodata.Fileoff))
+		ld.Datblk(ctxt, int64(ld.Segrelrodata.Vaddr), int64(ld.Segrelrodata.Filelen))
+	}
 
 	if ctxt.Debugvlog != 0 {
-		fmt.Fprintf(ctxt.Bso, "%5.2f datblk\n", ld.Cputime())
+		ctxt.Logf("%5.2f datblk\n", ld.Cputime())
 	}
-	ctxt.Bso.Flush()
 
 	ctxt.Out.SeekSet(int64(ld.Segdata.Fileoff))
 	ld.Datblk(ctxt, int64(ld.Segdata.Vaddr), int64(ld.Segdata.Filelen))
 
 	ctxt.Out.SeekSet(int64(ld.Segdwarf.Fileoff))
 	ld.Dwarfblk(ctxt, int64(ld.Segdwarf.Vaddr), int64(ld.Segdwarf.Filelen))
+}
 
+func asmb2(ctxt *ld.Link) {
 	/* output symbol table */
 	ld.Symsize = 0
 
 	ld.Lcsize = 0
 	symo := uint32(0)
 	if !*ld.FlagS {
+		// TODO: rationalize
 		if ctxt.Debugvlog != 0 {
-			fmt.Fprintf(ctxt.Bso, "%5.2f sym\n", ld.Cputime())
+			ctxt.Logf("%5.2f sym\n", ld.Cputime())
 		}
-		ctxt.Bso.Flush()
 		switch ctxt.HeadType {
 		default:
 			if ctxt.IsELF {
@@ -178,7 +183,7 @@ func asmb(ctxt *ld.Link) {
 			}
 
 		case objabi.Hplan9:
-			log.Fatalf("Plan 9 unsupported")
+			symo = uint32(ld.Segdata.Fileoff + ld.Segdata.Filelen)
 		}
 
 		ctxt.Out.SeekSet(int64(symo))
@@ -186,7 +191,7 @@ func asmb(ctxt *ld.Link) {
 		default:
 			if ctxt.IsELF {
 				if ctxt.Debugvlog != 0 {
-					fmt.Fprintf(ctxt.Bso, "%5.2f elfsym\n", ld.Cputime())
+					ctxt.Logf("%5.2f elfsym\n", ld.Cputime())
 				}
 				ld.Asmelfsym(ctxt)
 				ctxt.Out.Flush()
@@ -198,18 +203,37 @@ func asmb(ctxt *ld.Link) {
 			}
 
 		case objabi.Hplan9:
-			log.Fatalf("Plan 9 unsupported")
+			ld.Asmplan9sym(ctxt)
+			ctxt.Out.Flush()
+
+			sym := ctxt.Syms.Lookup("pclntab", 0)
+			if sym != nil {
+				ld.Lcsize = int32(len(sym.P))
+				ctxt.Out.Write(sym.P)
+				ctxt.Out.Flush()
+			}
 		}
 	}
 
 	if ctxt.Debugvlog != 0 {
-		fmt.Fprintf(ctxt.Bso, "%5.2f header\n", ld.Cputime())
+		ctxt.Logf("%5.2f header\n", ld.Cputime())
 	}
-	ctxt.Bso.Flush()
 	ctxt.Out.SeekSet(0)
 	switch ctxt.HeadType {
 	default:
-		log.Fatalf("Unsupported OS: %v", ctxt.HeadType)
+	case objabi.Hplan9: /* plan 9 */
+		magic := uint32(4*18*18 + 7)
+		if ctxt.Arch == sys.ArchMIPS64LE {
+			magic = uint32(4*26*26 + 7)
+		}
+		ctxt.Out.Write32(magic)                      /* magic */
+		ctxt.Out.Write32(uint32(ld.Segtext.Filelen)) /* sizes */
+		ctxt.Out.Write32(uint32(ld.Segdata.Filelen))
+		ctxt.Out.Write32(uint32(ld.Segdata.Length - ld.Segdata.Filelen))
+		ctxt.Out.Write32(uint32(ld.Symsize))          /* nsyms */
+		ctxt.Out.Write32(uint32(ld.Entryvalue(ctxt))) /* va of entry */
+		ctxt.Out.Write32(0)
+		ctxt.Out.Write32(uint32(ld.Lcsize))
 
 	case objabi.Hlinux,
 		objabi.Hfreebsd,
