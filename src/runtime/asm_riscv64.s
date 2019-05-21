@@ -157,34 +157,6 @@ TEXT runtime·getcallerpc(SB),NOSPLIT|NOFRAME,$0-8
 	MOV	T0, ret+0(FP)
 	RET
 
-// eqstring tests whether two strings are equal.
-// The compiler guarantees that strings passed
-// to eqstring have equal length.
-// See runtime_test.go:eqstring_generic for
-// equivalent Go code.
-
-// func eqstring(s1, s2 string) bool
-TEXT runtime·eqstring(SB),NOSPLIT,$0-33
-	MOV	s1_base+0(FP), T0
-	MOV	s2_base+16(FP), T1
-	MOV	$1, T2
-	MOVB	T2, ret+32(FP)
-	BNE	T0, T1, diff_len
-	RET
-diff_len:
-	MOV	s1_len+8(FP), T2
-	ADD	T0, T2, T3
-loop:
-	BNE	T0, T3, 2(PC)
-	RET
-	MOVBU	(T0), T5
-	ADD	$1, T0
-	MOVBU	(T1), T6
-	ADD	$1, T1
-	BEQ	T5, T6, loop
-	MOVB	ZERO, ret+32(FP)
-	RET
-
 /*
  * support for morestack
  */
@@ -470,38 +442,9 @@ TEXT runtime·goexit(SB),NOSPLIT|NOFRAME,$0-0
 	// traceback from goexit1 must hit code range of goexit
 	MOV	ZERO, ZERO	// NOP
 
-// func setcallerpc(argp unsafe.Pointer, pc uintptr)
-TEXT runtime·setcallerpc(SB),NOSPLIT,$8-16
-	MOV	pc+8(FP), A1
-	MOV	16(X2), A2
-	MOV	runtime·stackBarrierPC(SB), A3
-	BEQ	A2, A3, setbar
-	MOV	A1, 16(X2)		// set LR in caller
-	RET
-setbar:
-	// Set the stack barrier return PC.
-	MOV	A1, 8(X2)
-	CALL	runtime·setNextBarrierPC(SB)
-	RET
-
-TEXT runtime·stackBarrier(SB),NOSPLIT,$0
-	WORD $0
-
 // func cgocallback_gofunc(fv uintptr, frame uintptr, framesize, ctxt uintptr)
 TEXT ·cgocallback_gofunc(SB),NOSPLIT,$24-32
 	WORD $0
-
-TEXT runtime·prefetcht0(SB),NOSPLIT,$0-8
-	RET
-
-TEXT runtime·prefetcht1(SB),NOSPLIT,$0-8
-	RET
-
-TEXT runtime·prefetcht2(SB),NOSPLIT,$0-8
-	RET
-
-TEXT runtime·prefetchnta(SB),NOSPLIT,$0-8
-	RET
 
 TEXT runtime·breakpoint(SB),NOSPLIT|NOFRAME,$0-0
 	EBREAK
