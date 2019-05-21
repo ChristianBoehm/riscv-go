@@ -305,7 +305,7 @@ TEXT runtime·gosave(SB), NOSPLIT|NOFRAME, $0-8
 	RET
 
 // func asmcgocall(fn, arg unsafe.Pointer) int32
-TEXT ·asmcgocall(SB),NOSPLIT,$0-12
+TEXT ·asmcgocall(SB),NOSPLIT,$0-20
 	WORD $0
 
 // func asminit()
