@@ -598,28 +598,28 @@ TEXT runtime·panicIndexU(SB),NOSPLIT,$0-16
 	MOV	T1, y+8(FP)
 	JMP	runtime·goPanicIndexU(SB)
 TEXT runtime·panicSliceAlen(SB),NOSPLIT,$0-16
-	MOV	T2, x+0(FP)
-	MOV	T3, y+8(FP)
+	MOV	T1, x+0(FP)
+	MOV	T2, y+8(FP)
 	JMP	runtime·goPanicSliceAlen(SB)
 TEXT runtime·panicSliceAlenU(SB),NOSPLIT,$0-16
-	MOV	T2, x+0(FP)
-	MOV	T3, y+8(FP)
+	MOV	T1, x+0(FP)
+	MOV	T2, y+8(FP)
 	JMP	runtime·goPanicSliceAlenU(SB)
 TEXT runtime·panicSliceAcap(SB),NOSPLIT,$0-16
-	MOV	T2, x+0(FP)
-	MOV	T3, y+8(FP)
+	MOV	T1, x+0(FP)
+	MOV	T2, y+8(FP)
 	JMP	runtime·goPanicSliceAcap(SB)
 TEXT runtime·panicSliceAcapU(SB),NOSPLIT,$0-16
-	MOV	T2, x+0(FP)
-	MOV	T3, y+8(FP)
+	MOV	T1, x+0(FP)
+	MOV	T2, y+8(FP)
 	JMP	runtime·goPanicSliceAcapU(SB)
 TEXT runtime·panicSliceB(SB),NOSPLIT,$0-16
-	MOV	T1, x+0(FP)
-	MOV	T2, y+8(FP)
+	MOV	T0, x+0(FP)
+	MOV	T1, y+8(FP)
 	JMP	runtime·goPanicSliceB(SB)
 TEXT runtime·panicSliceBU(SB),NOSPLIT,$0-16
-	MOV	T1, x+0(FP)
-	MOV	T2, y+8(FP)
+	MOV	T0, x+0(FP)
+	MOV	T1, y+8(FP)
 	JMP	runtime·goPanicSliceBU(SB)
 TEXT runtime·panicSlice3Alen(SB),NOSPLIT,$0-16
 	MOV	T2, x+0(FP)
