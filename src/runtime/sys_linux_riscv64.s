@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 //
-// System calls and other sys.stuff for mips64, Linux
+// System calls and other sys.stuff for riscv64, Linux
 //
 
 #include "textflag.h"
@@ -48,35 +48,6 @@
 #define SYS_tkill		130
 #define SYS_write		64
 
-#define ERR_ABORT \
-	MOV	$-4096, T0 \
-	BLTU	A0, T0, 2(PC) \
-	WORD $0
-
-#define ERR_RETURN_M1(slot) \
-	MOV	$-4096, T0 \
-	BGEU	T0, A0, 2(PC) \
-	MOV	$-1, A0 \
-	MOVW	A0, slot(FP)
-
-#define ERR_RETURN_M1_64(slot) \
-	MOV	$-4096, T0 \
-	BGEU	T0, A0, 2(PC) \
-	MOV	$-1, A0 \
-	MOV	A0, slot(FP)
-
-#define ERR_RETURN_ABS(slot) \
-	MOV	$-4096, T0 \
-	BGEU	T0, A0, 2(PC) \
-	SUB	A0, ZERO, A0 \
-	MOVW	A0, slot(FP)
-
-#define ERR_RETURN_ABS_64(slot) \
-	MOV	$-4096, T0 \
-	BGEU	T0, A0, 2(PC) \
-	SUB	A0, ZERO, A0 \
-	MOV	A0, slot(FP)
-
 // func exit(code int32)
 TEXT runtime·exit(SB),NOSPLIT|NOFRAME,$0-4
 	MOVW	code+0(FP), A0
@@ -105,7 +76,10 @@ TEXT runtime·open(SB),NOSPLIT|NOFRAME,$0-20
 	MOVW	perm+12(FP), A3
 	MOV	$SYS_openat, A7
 	ECALL
-	ERR_RETURN_M1(ret+16)
+	MOV	$-4096, T0
+	BGEU	T0, A0, 2(PC)
+	MOV	$-1, A0
+	MOVW	A0, ret+16(FP)
 	RET
 
 // func closefd(fd int32) int32
@@ -113,7 +87,10 @@ TEXT runtime·closefd(SB),NOSPLIT|NOFRAME,$0-12
 	MOVW	fd+0(FP), A0
 	MOV	$SYS_close, A7
 	ECALL
-	ERR_RETURN_M1(ret+8)
+	MOV	$-4096, T0
+	BGEU	T0, A0, 2(PC)
+	MOV	$-1, A0
+	MOVW	A0, ret+8(FP)
 	RET
 
 // func write(fd uintptr, p unsafe.Pointer, n int32) int32
@@ -123,7 +100,10 @@ TEXT runtime·write(SB),NOSPLIT|NOFRAME,$0-28
 	MOVW	n+16(FP), A2
 	MOV	$SYS_write, A7
 	ECALL
-	ERR_RETURN_M1(ret+24)
+	MOV	$-4096, T0
+	BGEU	T0, A0, 2(PC)
+	MOV	$-1, A0
+	MOVW	A0, ret+24(FP)
 	RET
 
 // func read(fd int32, p unsafe.Pointer, n int32) int32
@@ -133,7 +113,10 @@ TEXT runtime·read(SB),NOSPLIT|NOFRAME,$0-28
 	MOVW	n+16(FP), A2
 	MOV	$SYS_read, A7
 	ECALL
-	ERR_RETURN_M1(ret+24)
+	MOV	$-4096, T0
+	BGEU	T0, A0, 2(PC)
+	MOV	$-1, A0
+	MOVW	A0, ret+24(FP)
 	RET
 
 // func getrlimit(kind int32, limit unsafe.Pointer) int32
@@ -243,7 +226,9 @@ TEXT runtime·rtsigprocmask(SB),NOSPLIT|NOFRAME,$0-28
 	MOVW	size+24(FP), A3
 	MOV	$SYS_rt_sigprocmask, A7
 	ECALL
-	ERR_ABORT
+	MOV	$-4096, T0
+	BLTU	A0, T0, 2(PC)
+	WORD	$0
 	RET
 
 // func rt_sigaction(sig uintptr, new, old *sigactiont, size uintptr) int32
@@ -314,7 +299,9 @@ TEXT runtime·munmap(SB),NOSPLIT|NOFRAME,$0
 	MOV	n+8(FP), A1
 	MOV	$SYS_munmap, A7
 	ECALL
-	ERR_ABORT
+	MOV	$-4096, T0
+	BLTU	A0, T0, 2(PC)
+	WORD	$0
 	RET
 
 // func madvise(addr unsafe.Pointer, n uintptr, flags int32)
@@ -405,7 +392,9 @@ TEXT runtime·sigaltstack(SB),NOSPLIT|NOFRAME,$0
 	MOV	old+8(FP), A1
 	MOV	$SYS_sigaltstack, A7
 	ECALL
-	ERR_ABORT
+	MOV	$-4096, T0
+	BLTU	A0, T0, 2(PC)
+	WORD	$0
 	RET
 
 // func osyield()
