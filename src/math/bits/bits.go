@@ -8,8 +8,6 @@
 // functions for the predeclared unsigned integer types.
 package bits
 
-import _ "unsafe" // for go:linkname
-
 const uintSize = 32 << (^uint(0) >> 32 & 1) // 32 or 64
 
 // UintSize is the size of a uint in bits.
@@ -232,8 +230,7 @@ func Reverse32(x uint32) uint32 {
 	x = x>>1&(m0&m) | x&(m0&m)<<1
 	x = x>>2&(m1&m) | x&(m1&m)<<2
 	x = x>>4&(m2&m) | x&(m2&m)<<4
-	x = x>>8&(m3&m) | x&(m3&m)<<8
-	return x>>16 | x<<16
+	return ReverseBytes32(x)
 }
 
 // Reverse64 returns the value of x with its bits in reversed order.
@@ -242,9 +239,7 @@ func Reverse64(x uint64) uint64 {
 	x = x>>1&(m0&m) | x&(m0&m)<<1
 	x = x>>2&(m1&m) | x&(m1&m)<<2
 	x = x>>4&(m2&m) | x&(m2&m)<<4
-	x = x>>8&(m3&m) | x&(m3&m)<<8
-	x = x>>16&(m4&m) | x&(m4&m)<<16
-	return x>>32 | x<<32
+	return ReverseBytes64(x)
 }
 
 // --- ReverseBytes ---
@@ -337,23 +332,21 @@ func Len64(x uint64) (n int) {
 // The carry input must be 0 or 1; otherwise the behavior is undefined.
 // The carryOut output is guaranteed to be 0 or 1.
 func Add(x, y, carry uint) (sum, carryOut uint) {
-	yc := y + carry
-	sum = x + yc
-	if sum < x || yc < y {
-		carryOut = 1
+	if UintSize == 32 {
+		s32, c32 := Add32(uint32(x), uint32(y), uint32(carry))
+		return uint(s32), uint(c32)
 	}
-	return
+	s64, c64 := Add64(uint64(x), uint64(y), uint64(carry))
+	return uint(s64), uint(c64)
 }
 
 // Add32 returns the sum with carry of x, y and carry: sum = x + y + carry.
 // The carry input must be 0 or 1; otherwise the behavior is undefined.
 // The carryOut output is guaranteed to be 0 or 1.
 func Add32(x, y, carry uint32) (sum, carryOut uint32) {
-	yc := y + carry
-	sum = x + yc
-	if sum < x || yc < y {
-		carryOut = 1
-	}
+	sum64 := uint64(x) + uint64(y) + uint64(carry)
+	sum = uint32(sum64)
+	carryOut = uint32(sum64 >> 32)
 	return
 }
 
@@ -361,11 +354,8 @@ func Add32(x, y, carry uint32) (sum, carryOut uint32) {
 // The carry input must be 0 or 1; otherwise the behavior is undefined.
 // The carryOut output is guaranteed to be 0 or 1.
 func Add64(x, y, carry uint64) (sum, carryOut uint64) {
-	yc := y + carry
-	sum = x + yc
-	if sum < x || yc < y {
-		carryOut = 1
-	}
+	sum = x + y + carry
+	carryOut = ((x & y) | ((x | y) &^ sum)) >> 63
 	return
 }
 
@@ -375,23 +365,20 @@ func Add64(x, y, carry uint64) (sum, carryOut uint64) {
 // The borrow input must be 0 or 1; otherwise the behavior is undefined.
 // The borrowOut output is guaranteed to be 0 or 1.
 func Sub(x, y, borrow uint) (diff, borrowOut uint) {
-	yb := y + borrow
-	diff = x - yb
-	if diff > x || yb < y {
-		borrowOut = 1
+	if UintSize == 32 {
+		d32, b32 := Sub32(uint32(x), uint32(y), uint32(borrow))
+		return uint(d32), uint(b32)
 	}
-	return
+	d64, b64 := Sub64(uint64(x), uint64(y), uint64(borrow))
+	return uint(d64), uint(b64)
 }
 
 // Sub32 returns the difference of x, y and borrow, diff = x - y - borrow.
 // The borrow input must be 0 or 1; otherwise the behavior is undefined.
 // The borrowOut output is guaranteed to be 0 or 1.
 func Sub32(x, y, borrow uint32) (diff, borrowOut uint32) {
-	yb := y + borrow
-	diff = x - yb
-	if diff > x || yb < y {
-		borrowOut = 1
-	}
+	diff = x - y - borrow
+	borrowOut = ((^x & y) | (^(x ^ y) & diff)) >> 31
 	return
 }
 
@@ -399,11 +386,8 @@ func Sub32(x, y, borrow uint32) (diff, borrowOut uint32) {
 // The borrow input must be 0 or 1; otherwise the behavior is undefined.
 // The borrowOut output is guaranteed to be 0 or 1.
 func Sub64(x, y, borrow uint64) (diff, borrowOut uint64) {
-	yb := y + borrow
-	diff = x - yb
-	if diff > x || yb < y {
-		borrowOut = 1
-	}
+	diff = x - y - borrow
+	borrowOut = ((^x & y) | (^(x ^ y) & diff)) >> 63
 	return
 }
 
@@ -527,9 +511,3 @@ func Div64(hi, lo, y uint64) (quo, rem uint64) {
 
 	return q1*two32 + q0, (un21*two32 + un0 - q0*y) >> s
 }
-
-//go:linkname overflowError runtime.overflowError
-var overflowError error
-
-//go:linkname divideError runtime.divideError
-var divideError error

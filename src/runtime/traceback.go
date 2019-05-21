@@ -1293,10 +1293,7 @@ func printCgoTraceback(callers *cgoCallers) {
 func printOneCgoTraceback(pc uintptr, max int, arg *cgoSymbolizerArg) int {
 	c := 0
 	arg.pc = pc
-	for {
-		if c > max {
-			break
-		}
+	for c <= max {
 		callCgoSymbolizer(arg)
 		if arg.funcName != nil {
 			// Note that we don't print any argument
