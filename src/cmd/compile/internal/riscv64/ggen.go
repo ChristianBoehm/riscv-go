@@ -23,7 +23,7 @@ func zerorange(pp *gc.Progs, p *obj.Prog, off, cnt int64, _ *uint32) *obj.Prog {
 	// 	MOVB	ZERO, (T0)
 	// 	ADD	$1, T0
 	//	BNE	T0, T1, loop
-	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, 8+off-8, obj.TYPE_REG, riscv.REG_T0, 0)
+	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, 8+off, obj.TYPE_REG, riscv.REG_T0, 0)
 	p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: riscv.REG_SP})
 	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, cnt, obj.TYPE_REG, riscv.REG_T1, 0)
 	p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: riscv.REG_T0})
