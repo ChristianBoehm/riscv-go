@@ -16,6 +16,17 @@ func zerorange(pp *gc.Progs, p *obj.Prog, off, cnt int64, _ *uint32) *obj.Prog {
 	if cnt == 0 {
 		return p
 	}
+
+	// Adjust the frame to account for LR.
+	off += gc.Ctxt.FixedFrameSize()
+
+	if cnt < int64(4*gc.Widthptr) {
+		for i := int64(0); i < cnt; i += int64(gc.Widthptr) {
+			p = pp.Appendpp(p, riscv.AMOV, obj.TYPE_REG, riscv.REG_ZERO, 0, obj.TYPE_MEM, riscv.REG_SP, off+i)
+		}
+		return p
+	}
+
 	// Loop, zeroing one byte at a time.
 	// ADD	$(frame+lo), SP, T0
 	// ADD	$(cnt), T0, T1
@@ -23,7 +34,7 @@ func zerorange(pp *gc.Progs, p *obj.Prog, off, cnt int64, _ *uint32) *obj.Prog {
 	// 	MOVB	ZERO, (T0)
 	// 	ADD	$1, T0
 	//	BNE	T0, T1, loop
-	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, 8+off, obj.TYPE_REG, riscv.REG_T0, 0)
+	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, off, obj.TYPE_REG, riscv.REG_T0, 0)
 	p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: riscv.REG_SP})
 	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, cnt, obj.TYPE_REG, riscv.REG_T1, 0)
 	p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: riscv.REG_T0})
