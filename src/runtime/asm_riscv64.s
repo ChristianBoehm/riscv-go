@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build riscv64
+
 #include "go_asm.h"
 #include "funcdata.h"
 #include "textflag.h"
@@ -69,6 +71,23 @@ nocgo:
 	CALL	runtime·mstart(SB)
 
 	WORD $0 // crash if reached
+	RET
+
+// Called from cgo wrappers, this function returns g->m->curg.stack.hi.
+// Must obey the gcc calling convention.
+TEXT _cgo_topofstack(SB),NOSPLIT,$16
+	// g (X3) and REG_TMP (X31)  might be clobbered by load_g. They
+	// are callee-save in the gcc calling convention, so save them.
+	MOV	X31, savedX31-16(SP)
+	MOV	g, savedG-8(SP)
+
+	CALL	runtime·load_g(SB)
+	MOV	g_m(g), X31
+	MOV	m_curg(X31), X31
+	MOV	(g_stack+stack_hi)(X31), X31 // return value in X31
+
+	MOV	savedG-8(SP), g
+	MOV	savedX31-16(SP), X31
 	RET
 
 // void setg_gcc(G*); set g called from gcc with g in A0
@@ -441,6 +460,22 @@ TEXT runtime·goexit(SB),NOSPLIT|NOFRAME,$0-0
 	JMP	runtime·goexit1(SB)	// does not return
 	// traceback from goexit1 must hit code range of goexit
 	MOV	ZERO, ZERO	// NOP
+
+// cgocallback(void (*fn)(void*), void *frame, uintptr framesize, uintptr ctxt)
+// Turn the fn into a Go func (by taking its address) and call
+// cgocallback_gofunc.
+TEXT runtime·cgocallback(SB),NOSPLIT,$32-32
+	MOV	$fn+0(FP), A1
+	MOV	A1, 8(X2)
+	MOV	frame+8(FP), A1
+	MOV	A1, 16(X2)
+	MOV	framesize+16(FP), A1
+	MOV	A1, 24(X2)
+	MOV	ctxt+24(FP), A1
+	MOV	A1, 32(X2)
+	MOV	$runtime·cgocallback_gofunc(SB), A1
+	CALL A1
+	RET
 
 // func cgocallback_gofunc(fv uintptr, frame uintptr, framesize, ctxt uintptr)
 TEXT ·cgocallback_gofunc(SB),NOSPLIT,$24-32
