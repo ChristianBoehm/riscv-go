@@ -457,6 +457,9 @@
 (MOVDconst <t> [c]) && !is32Bit(c) && int32(c) <  0 -> (ADD (SLLI <t> [32] (MOVDconst [c>>32+1])) (MOVDconst [int64(int32(c))]))
 (MOVDconst <t> [c]) && !is32Bit(c) && int32(c) >= 0 -> (ADD (SLLI <t> [32] (MOVDconst [c>>32+0])) (MOVDconst [int64(int32(c))]))
 
+// Fold ADD+MOVDconst into ADDI where possible.
+(ADD (MOVDconst [off]) ptr) && is32Bit(off) -> (ADDI [off] ptr)
+
 (Addr {sym} base) -> (MOVaddr {sym} base)
 (LocalAddr {sym} base _) -> (MOVaddr {sym} base)
 

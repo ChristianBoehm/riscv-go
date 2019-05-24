@@ -343,6 +343,8 @@ func rewriteValueRISCV64(v *Value) bool {
 		return rewriteValueRISCV64_OpOrB_0(v)
 	case OpPanicBounds:
 		return rewriteValueRISCV64_OpPanicBounds_0(v)
+	case OpRISCV64ADD:
+		return rewriteValueRISCV64_OpRISCV64ADD_0(v)
 	case OpRISCV64ADDI:
 		return rewriteValueRISCV64_OpRISCV64ADDI_0(v)
 	case OpRISCV64MOVBUload:
@@ -3356,6 +3358,46 @@ func rewriteValueRISCV64_OpPanicBounds_0(v *Value) bool {
 		v.AddArg(x)
 		v.AddArg(y)
 		v.AddArg(mem)
+		return true
+	}
+	return false
+}
+func rewriteValueRISCV64_OpRISCV64ADD_0(v *Value) bool {
+	// match: (ADD (MOVDconst [off]) ptr)
+	// cond: is32Bit(off)
+	// result: (ADDI [off] ptr)
+	for {
+		ptr := v.Args[1]
+		v_0 := v.Args[0]
+		if v_0.Op != OpRISCV64MOVDconst {
+			break
+		}
+		off := v_0.AuxInt
+		if !(is32Bit(off)) {
+			break
+		}
+		v.reset(OpRISCV64ADDI)
+		v.AuxInt = off
+		v.AddArg(ptr)
+		return true
+	}
+	// match: (ADD ptr (MOVDconst [off]))
+	// cond: is32Bit(off)
+	// result: (ADDI [off] ptr)
+	for {
+		_ = v.Args[1]
+		ptr := v.Args[0]
+		v_1 := v.Args[1]
+		if v_1.Op != OpRISCV64MOVDconst {
+			break
+		}
+		off := v_1.AuxInt
+		if !(is32Bit(off)) {
+			break
+		}
+		v.reset(OpRISCV64ADDI)
+		v.AuxInt = off
+		v.AddArg(ptr)
 		return true
 	}
 	return false
