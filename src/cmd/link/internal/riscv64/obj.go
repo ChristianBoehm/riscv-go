@@ -31,59 +31,42 @@ import (
 	"cmd/internal/objabi"
 	"cmd/internal/sys"
 	"cmd/link/internal/ld"
-	"log"
 )
 
 func Init() (*sys.Arch, ld.Arch) {
 	arch := sys.ArchRISCV64
 
 	theArch := ld.Arch{
-		Funcalign: FuncAlign, /* XXX */
-		Maxalign: MaxAlign,
-		Minalign: MinAlign,
+		Funcalign:  FuncAlign, /* XXX */
+		Maxalign:   MaxAlign,
+		Minalign:   MinAlign,
 		Dwarfregsp: DWARFREGSP,
 		Dwarfreglr: DWARFREGLR,
 
-		Adddynrel: adddynrel,
-		Archinit: archinit,
-		Archreloc: archreloc,
+		Adddynrel:        adddynrel,
+		Archinit:         archinit,
+		Archreloc:        archreloc,
 		Archrelocvariant: archrelocvariant,
-		Asmb: asmb,
-		Asmb2: asmb2,
-		Elfreloc1: elfreloc1,
-		Elfsetupplt: elfsetupplt,
-		Gentext: gentext,
-		Machoreloc1: machoreloc1,
+		Asmb:             asmb,
+		Asmb2:            asmb2,
+		Elfreloc1:        elfreloc1,
+		Elfsetupplt:      elfsetupplt,
+		Gentext:          gentext,
+		Machoreloc1:      machoreloc1,
 
 		Linuxdynld: "/lib/ld.so.1",
 
-		Freebsddynld: "XXX",
-		Netbsddynld: "XXX",
-		Openbsddynld: "XXX",
+		Freebsddynld:   "XXX",
+		Netbsddynld:    "XXX",
+		Openbsddynld:   "XXX",
 		Dragonflydynld: "XXX",
-		Solarisdynld: "XXX",
+		Solarisdynld:   "XXX",
 	}
 
 	return arch, theArch
 }
 
 func archinit(ctxt *ld.Link) {
-	// getgoextlinkenabled is based on GO_EXTLINK_ENABLED when
-	// Go was built; see ../../make.bash.
-	if ctxt.LinkMode == ld.LinkAuto && objabi.Getgoextlinkenabled() == "0" {
-		ctxt.LinkMode = ld.LinkInternal
-	}
-
-	switch ctxt.HeadType {
-	default:
-		if ctxt.LinkMode == ld.LinkAuto {
-			ctxt.LinkMode = ld.LinkInternal
-		}
-		if ctxt.LinkMode == ld.LinkExternal && objabi.Getgoextlinkenabled() != "1" {
-			log.Fatalf("cannot use -linkmode=external with -H %v", ctxt.HeadType)
-		}
-	}
-
 	switch ctxt.HeadType {
 	default:
 		ld.Exitf("unknown -H option: %v", ctxt.HeadType)
