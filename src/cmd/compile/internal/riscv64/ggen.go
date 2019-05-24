@@ -10,8 +10,6 @@ import (
 	"cmd/internal/obj/riscv"
 )
 
-// FIXME: This is incredibly inefficient, but nice and simple. Optimize.
-// See other zerorange implementations for ideas.
 func zerorange(pp *gc.Progs, p *obj.Prog, off, cnt int64, _ *uint32) *obj.Prog {
 	if cnt == 0 {
 		return p
@@ -27,20 +25,22 @@ func zerorange(pp *gc.Progs, p *obj.Prog, off, cnt int64, _ *uint32) *obj.Prog {
 		return p
 	}
 
-	// Loop, zeroing one byte at a time.
-	// ADD	$(frame+lo), SP, T0
+	// TODO(jsing): Add a duff zero implementation for medium sized ranges.
+
+	// Loop, zeroing pointer width bytes at a time.
+	// ADD	$(off), SP, T0
 	// ADD	$(cnt), T0, T1
 	// loop:
-	// 	MOVB	ZERO, (T0)
-	// 	ADD	$1, T0
+	// 	MOV	ZERO, (T0)
+	// 	ADD	$Widthptr, T0
 	//	BNE	T0, T1, loop
 	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, off, obj.TYPE_REG, riscv.REG_T0, 0)
 	p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: riscv.REG_SP})
 	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, cnt, obj.TYPE_REG, riscv.REG_T1, 0)
 	p.SetFrom3(obj.Addr{Type: obj.TYPE_REG, Reg: riscv.REG_T0})
-	p = pp.Appendpp(p, riscv.AMOVB, obj.TYPE_REG, riscv.REG_ZERO, 0, obj.TYPE_MEM, riscv.REG_T0, 0)
+	p = pp.Appendpp(p, riscv.AMOV, obj.TYPE_REG, riscv.REG_ZERO, 0, obj.TYPE_MEM, riscv.REG_T0, 0)
 	loop := p
-	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, 1, obj.TYPE_REG, riscv.REG_T0, 0)
+	p = pp.Appendpp(p, riscv.AADD, obj.TYPE_CONST, 0, int64(gc.Widthptr), obj.TYPE_REG, riscv.REG_T0, 0)
 	p = pp.Appendpp(p, riscv.ABNE, obj.TYPE_REG, riscv.REG_T0, 0, obj.TYPE_BRANCH, 0, 0)
 	p.Reg = riscv.REG_T1
 	gc.Patch(p, loop)
